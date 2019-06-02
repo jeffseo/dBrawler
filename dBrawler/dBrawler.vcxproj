@@ -74,7 +74,7 @@
     <LibraryPath>$(ProjectDir)lib\SDL2_mixer-2.0.2\lib\x86;$(ProjectDir)lib\SDL2_ttf-2.0.14\lib\x86;$(ProjectDir)lib\SDL2_image-2.0.3\lib\x86;$(ProjectDir)lib\SDL2-2.0.8\lib\x86;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>$(ProjectDir)lib\SDL2_ttf-2.0.14\include;$(ProjectDir)lib\SDL2_image-2.0.3\include;$(ProjectDir)lib\SDL2-2.0.8\include;$(ProjectDir)lib\SDL2_mixer-2.0.2\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)lib\SDL2_ttf-2.0.14\include;$(ProjectDir)lib\SDL2_image-2.0.3\include;$(ProjectDir)lib\SDL2-2.0.8\include;$(ProjectDir)lib\SDL2_mixer-2.0.2\include;$(ProjectDir)header;$(IncludePath)</IncludePath>
     <LibraryPath>$(ProjectDir)lib\SDL2_mixer-2.0.2\lib\x64;$(ProjectDir)lib\SDL2_ttf-2.0.14\lib\x64;$(ProjectDir)lib\SDL2_image-2.0.3\lib\x64;$(ProjectDir)lib\SDL2-2.0.8\lib\x64;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -130,7 +130,15 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="31_scrolling_backgrounds\31_scrolling_backgrounds.cpp" />
+    <ClCompile Include="source\Dot.cpp" />
+    <ClCompile Include="source\Game.cpp" />
+    <ClCompile Include="source\LTexture.cpp" />
+    <ClCompile Include="source\Main.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="header\Dot.h" />
+    <ClInclude Include="header\Game.h" />
+    <ClInclude Include="header\LTexture.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
