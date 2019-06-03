@@ -10,6 +10,8 @@
 Game::Game(const int screenWidth, const int screenHeight)
 	: mScreenWidth(screenWidth)
 	, mScreenHeight(screenHeight)
+	, mpWindow(nullptr)
+	, mpRenderer(nullptr)
 {
 	//Start up SDL and create window
 	if (!Init())
@@ -32,10 +34,7 @@ Game::Game(const int screenWidth, const int screenHeight)
 			SDL_Event e;
 
 			//The dot that will be moving around on the screen
-			Dot dot;
-
-			//The background scrolling offset
-			int scrollingOffset = 0;
+			Dot snake(mDotTexture, mScreenWidth, mScreenHeight);
 
 			//While application is running
 			while (!quit)
@@ -50,32 +49,24 @@ Game::Game(const int screenWidth, const int screenHeight)
 					}
 
 					//Handle input for the dot
-					dot.handleEvent(e);
+					snake.handleEvent(e);
 				}
 
 				//Move the dot
-				dot.move();
-
-				//Scroll background
-				--scrollingOffset;
-				if (scrollingOffset < -gBGTexture.getWidth())
-				{
-					scrollingOffset = 0;
-				}
+				snake.move();
 
 				//Clear screen
-				SDL_SetRenderDrawColor(gRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
-				SDL_RenderClear(gRenderer);
+				SDL_SetRenderDrawColor(mpRenderer.get(), 0xFF, 0xFF, 0xFF, 0xFF);
+				SDL_RenderClear(mpRenderer.get());
 
 				//Render background
-				gBGTexture.render(scrollingOffset, 0);
-				gBGTexture.render(scrollingOffset + gBGTexture.getWidth(), 0);
+				mBGTexture.render(*mpRenderer, 0, 0);
 
 				//Render objects
-				dot.render();
+				snake.render(*mpRenderer);
 
 				//Update screen
-				SDL_RenderPresent(gRenderer);
+				SDL_RenderPresent(mpRenderer.get());
 			}
 		}
 	}
@@ -85,6 +76,41 @@ Game::~Game()
 {
 	//Free resources and close SDL
 	Close();
+}
+
+std::shared_ptr<SDL_Window> Game::CreateWindow() const
+{
+	SDL_Window* pWindow = SDL_CreateWindow("SDL Tutorial", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, mScreenWidth, mScreenHeight, SDL_WINDOW_SHOWN);
+	if (pWindow == nullptr)
+	{
+		printf("Window could not be created! SDL Error: %s\n", SDL_GetError());
+		SDL_assert(pWindow != nullptr);
+	}
+	return std::shared_ptr<SDL_Window>(pWindow, SDL_DestroyWindow);
+}
+
+std::shared_ptr<SDL_Renderer> Game::CreateRenderer(std::shared_ptr<SDL_Window> pWindow) const
+{
+	//Create vsynced renderer for window
+	SDL_Renderer* pRenderer = SDL_CreateRenderer(pWindow.get(), -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+	if (pRenderer == nullptr)
+	{
+		printf("Renderer could not be created! SDL Error: %s\n", SDL_GetError());
+		SDL_assert(pRenderer != nullptr);
+	}
+
+	//Initialize renderer color
+	SDL_SetRenderDrawColor(pRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
+
+	//Initialize PNG loading
+	int imgFlags = IMG_INIT_PNG;
+	if (!(IMG_Init(imgFlags) & imgFlags))
+	{
+		printf("SDL_image could not initialize! SDL_image Error: %s\n", IMG_GetError());
+		SDL_assert(true);
+	}
+
+	return std::shared_ptr<SDL_Renderer>(pRenderer, SDL_DestroyRenderer);
 }
 
 bool Game::Init()
@@ -107,35 +133,8 @@ bool Game::Init()
 		}
 
 		//Create window
-		gWindow = SDL_CreateWindow("SDL Tutorial", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
-		if (gWindow == NULL)
-		{
-			printf("Window could not be created! SDL Error: %s\n", SDL_GetError());
-			success = false;
-		}
-		else
-		{
-			//Create vsynced renderer for window
-			gRenderer = SDL_CreateRenderer(gWindow, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
-			if (gRenderer == NULL)
-			{
-				printf("Renderer could not be created! SDL Error: %s\n", SDL_GetError());
-				success = false;
-			}
-			else
-			{
-				//Initialize renderer color
-				SDL_SetRenderDrawColor(gRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
-
-				//Initialize PNG loading
-				int imgFlags = IMG_INIT_PNG;
-				if (!(IMG_Init(imgFlags) & imgFlags))
-				{
-					printf("SDL_image could not initialize! SDL_image Error: %s\n", IMG_GetError());
-					success = false;
-				}
-			}
-		}
+		mpWindow = CreateWindow();
+		mpRenderer = CreateRenderer(mpWindow);
 	}
 
 	return success;
@@ -144,14 +143,11 @@ bool Game::Init()
 void Game::Close()
 {
 	//Free loaded images
-	gDotTexture.free();
-	gBGTexture.free();
+	mDotTexture.free();
+	mBGTexture.free();
 
-	//Destroy window	
-	SDL_DestroyRenderer(gRenderer);
-	SDL_DestroyWindow(gWindow);
-	gWindow = NULL;
-	gRenderer = NULL;
+	mpWindow.reset();
+	mpRenderer.reset();
 
 	//Quit SDL subsystems
 	IMG_Quit();
@@ -164,14 +160,14 @@ bool Game::LoadMedia()
 	bool success = true;
 
 	//Load dot texture
-	if (!gDotTexture.loadFromFile("31_scrolling_backgrounds/dot.bmp"))
+	if (!mDotTexture.loadFromFile("31_scrolling_backgrounds/dot.bmp", *mpRenderer))
 	{
 		printf("Failed to load dot texture!\n");
 		success = false;
 	}
 
 	//Load background texture
-	if (!gBGTexture.loadFromFile("31_scrolling_backgrounds/bg.png"))
+	if (!mBGTexture.loadFromFile("31_scrolling_backgrounds/bg.png", *mpRenderer))
 	{
 		printf("Failed to load background texture!\n");
 		success = false;

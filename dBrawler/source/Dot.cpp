@@ -2,14 +2,14 @@
 
 Dot::Dot(LTexture& gDotTexture, const uint32_t screenWidth, const uint32_t screenHeight)
 	: mpDotTexture(gDotTexture)
+	, mDirection(Direction_e::INVALID_DIRECTION)
 {
 	//Initialize the offsets
 	mPosX = 0;
 	mPosY = 0;
 
 	//Initialize the velocity
-	mVelX = 0;
-	mVelY = 0;
+	mVelocity = 5;
 
 	mScreenHeight = screenHeight;
 	mScreenWidth = screenWidth;
@@ -23,51 +23,57 @@ void Dot::handleEvent(SDL_Event& e)
 		//Adjust the velocity
 		switch (e.key.keysym.sym)
 		{
-		case SDLK_UP: mVelY -= DOT_VEL; break;
-		case SDLK_DOWN: mVelY += DOT_VEL; break;
-		case SDLK_LEFT: mVelX -= DOT_VEL; break;
-		case SDLK_RIGHT: mVelX += DOT_VEL; break;
-		}
-	}
-	//If a key was released
-	else if (e.type == SDL_KEYUP && e.key.repeat == 0)
-	{
-		//Adjust the velocity
-		switch (e.key.keysym.sym)
-		{
-		case SDLK_UP: mVelY += DOT_VEL; break;
-		case SDLK_DOWN: mVelY -= DOT_VEL; break;
-		case SDLK_LEFT: mVelX += DOT_VEL; break;
-		case SDLK_RIGHT: mVelX -= DOT_VEL; break;
+		case SDLK_UP: mDirection = Direction_e::NORTH; break;
+		case SDLK_DOWN: mDirection = Direction_e::SOUTH; break;
+		case SDLK_LEFT: mDirection = Direction_e::WEST; break;
+		case SDLK_RIGHT: mDirection = Direction_e::EAST; break;
 		}
 	}
 }
 
 void Dot::move()
 {
-	//Move the dot left or right
-	mPosX += mVelX;
-
-	//If the dot went too far to the left or right
-	if ((mPosX < 0) || (mPosX + DOT_WIDTH > mScreenWidth))
+	switch (mDirection)
 	{
-		//Move back
-		mPosX -= mVelX;
+		case Direction_e::NORTH:
+			mPosY -= mVelocity;
+			break;
+		case Direction_e::SOUTH:
+			mPosY += mVelocity;
+			break;
+		case Direction_e::EAST:
+			mPosX += mVelocity;
+			break;
+		case Direction_e::WEST:
+			mPosX -= mVelocity;
+			break;
+		default:
+			break;
 	}
 
-	//Move the dot up or down
-	mPosY += mVelY;
+	//If the dot went too far to the left or right
+	if (mPosX < 0)
+	{
+		mPosX = 0;
+	}
+	else if ((mPosX + DOT_WIDTH) > mScreenWidth)
+	{
+		mPosX = mScreenWidth - DOT_WIDTH;
+	}
 
 	//If the dot went too far up or down
-	if ((mPosY < 0) || (mPosY + DOT_HEIGHT > mScreenHeight))
+	if (mPosY < 0)
 	{
-		//Move back
-		mPosY -= mVelY;
+		mPosY = 0;
+	}
+	else if ((mPosY + DOT_HEIGHT) > mScreenHeight)
+	{
+		mPosY = mScreenHeight - DOT_HEIGHT;
 	}
 }
 
-void Dot::render()
+void Dot::render(SDL_Renderer& mpRenderer)
 {
 	//Show the dot
-	mpDotTexture.render(mPosX, mPosY);
+	mpDotTexture.render(mpRenderer, mPosX, mPosY);
 }

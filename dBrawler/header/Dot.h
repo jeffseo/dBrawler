@@ -1,6 +1,16 @@
 #pragma once
 #include <SDL.h>
 #include "LTexture.h"
+
+enum class Direction_e
+{
+	NORTH,
+	SOUTH,
+	EAST,
+	WEST,
+	INVALID_DIRECTION
+};
+
 //The dot that will move around on the screen
 class Dot
 {
@@ -22,14 +32,16 @@ public:
 	void move();
 
 	//Shows the dot on the screen
-	void render();
+	void render(SDL_Renderer& mpRenderer);
 
 private:
 	//The X and Y offsets of the dot
 	int mPosX, mPosY;
 
 	//The velocity of the dot
-	int mVelX, mVelY;
+	int mVelocity;
+
+	Direction_e mDirection;
 
 	int mScreenWidth;
 	int mScreenHeight;
