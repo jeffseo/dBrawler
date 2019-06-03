@@ -132,13 +132,18 @@
   <ItemGroup>
     <ClCompile Include="source\Dot.cpp" />
     <ClCompile Include="source\Game.cpp" />
+    <ClCompile Include="source\GameObject.cpp" />
     <ClCompile Include="source\LTexture.cpp" />
     <ClCompile Include="source\Main.cpp" />
+    <ClCompile Include="source\Snake.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="header\Dot.h" />
     <ClInclude Include="header\Game.h" />
+    <ClInclude Include="header\GameObject.h" />
     <ClInclude Include="header\LTexture.h" />
+    <ClInclude Include="header\Snake.h" />
+    <ClInclude Include="source\SDL_Helper.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

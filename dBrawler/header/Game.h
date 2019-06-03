@@ -1,5 +1,6 @@
 #pragma once
 #include "LTexture.h"
+#include "SDL_Helper.h"
 #include <memory>
 
 class Game
@@ -8,11 +9,13 @@ public:
 	Game(const int screenWidth, const int screenHeight);
 	~Game();
 
-	std::shared_ptr<SDL_Window> CreateWindow() const;
-	std::shared_ptr<SDL_Renderer> CreateRenderer(std::shared_ptr<SDL_Window> pWindow) const;
+	std::unique_ptr<SDL_Window, SDL_Helper::SDL_Deleter> CreateWindow() const;
+	std::unique_ptr<SDL_Renderer, SDL_Helper::SDL_Deleter> CreateRenderer(std::unique_ptr<SDL_Window, SDL_Helper::SDL_Deleter>& pWindow) const;
 	
 	//Starts up SDL and creates window
 	bool Init();
+
+	void Start();
 
 	//Frees media and shuts down SDL
 	void Close();
@@ -20,16 +23,14 @@ public:
 	//Loads media
 	bool LoadMedia();
 
+	void Evaluate();
+
 private:
 	//The window we'll be rendering to
-	std::shared_ptr<SDL_Window> mpWindow;
+	std::unique_ptr<SDL_Window, SDL_Helper::SDL_Deleter> mpWindow;
 
 	//The window renderer
-	std::shared_ptr<SDL_Renderer> mpRenderer;
-
-	//Scene textures
-	LTexture mDotTexture;
-	LTexture mBGTexture;
+	std::unique_ptr<SDL_Renderer, SDL_Helper::SDL_Deleter> mpRenderer;
 
 	int mScreenWidth;
 	int mScreenHeight;

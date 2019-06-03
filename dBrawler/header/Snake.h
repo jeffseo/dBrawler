@@ -1,8 +1,18 @@
 #pragma once
 #include <SDL.h>
+#include <memory>
+#include "SDL_Helper.h"
 
-//The dot that will move around on the screen
-class Dot
+enum class Direction_e
+{
+	NORTH,
+	SOUTH,
+	EAST,
+	WEST,
+	INVALID_DIRECTION
+};
+
+class Snake
 {
 public:
 	//The dimensions of the dot
@@ -13,15 +23,16 @@ public:
 	static const int DEFAULT_DOT_VEL = 5;
 
 	//Initializes the variables
-	Dot(const uint32_t screenWidth, const uint32_t screenHeight);
+	Snake(const int x, const int y, const uint32_t screenWidth, const uint32_t screenHeight);
 
 	//Takes key presses and adjusts the dot's velocity
 	void handleEvent(SDL_Event& e);
 
+	//Moves the dot
+	void move();
+
 	//Shows the dot on the screen
-	void render(SDL_Renderer& mpRenderer);
-	
-	bool IsEaten() const;
+	void render(const std::unique_ptr<SDL_Renderer, SDL_Helper::SDL_Deleter>& mpRenderer);
 
 private:
 	//The X and Y offsets of the dot
@@ -29,9 +40,9 @@ private:
 	int mPosY;
 	int mHeight;
 	int mWidth;
+	uint32_t mVelocity;
+	Direction_e mDirection;
 
 	int mScreenWidth;
 	int mScreenHeight;
-
-	bool mEaten;
 };
